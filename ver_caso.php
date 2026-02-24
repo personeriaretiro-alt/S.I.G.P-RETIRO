@@ -11,13 +11,16 @@ if (!isset($_GET['id'])) {
 $id_radicado = $_GET['id'];
 
 // Consultar datos del caso y del ciudadano
-$sql = "SELECT r.*, c.nombres, c.apellidos, c.numero_documento, c.telefono, c.email, t.nombre as tipo_tramite_nombre 
+$sql = "SELECT r.*, c.nombres, c.apellidos, c.numero_documento, c.telefono, c.email, c.firma_digital, t.nombre as tipo_tramite_nombre 
         FROM radicados r 
         JOIN ciudadanos c ON r.ciudadano_id = c.id
         JOIN tipos_tramite t ON r.tipo_tramite_id = t.id
         WHERE r.id = $id_radicado";
 
 $result = $conn->query($sql);
+if (!$result) {
+    die("Error en la consulta: " . $conn->error);
+}
 
 if ($result->num_rows == 0) {
     die("Caso no encontrado.");
@@ -69,6 +72,12 @@ $historial = $conn->query($sql_historial);
                     <a href="tel:<?php echo $caso['telefono']; ?>" class="btn btn-sm btn-outline-success"><i class="fas fa-phone"></i> Llamar</a>
                 </div>
             </div>
+            <?php if (!empty($caso['firma_digital']) && file_exists($caso['firma_digital'])): ?>
+            <div class="card-footer bg-white text-center">
+                <small class="text-muted d-block mb-2">Firma Digital Autorizada</small>
+                <img src="<?php echo $caso['firma_digital']; ?>" alt="Firma del Ciudadano" class="img-fluid border rounded p-1" style="max-height: 80px;">
+            </div>
+            <?php endif; ?>
         </div>
 
         <div class="card shadow-sm mb-4">

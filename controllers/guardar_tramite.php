@@ -10,6 +10,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     // 1. Datos del Ciudadano
     $doc = trim($_POST['documento']);
+    // Eliminar puntos o espacios internos que puedan causar duplicados (ej: 1.234.567 vs 1234567)
+    $doc = str_replace(['.', ' '], '', $doc); 
+    
     $tipo_doc = $_POST['tipo_documento'];
     
     // Normalización de datos para consistencia (Mayúsculas / Minúsculas)
@@ -18,6 +21,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $direccion = mb_strtoupper(trim($_POST['direccion']), 'UTF-8');
     $email = strtolower(trim($_POST['email']));
     $telefono = trim($_POST['telefono']);
+    $edad = !empty($_POST['edad']) ? (int)$_POST['edad'] : NULL;
     
     // Nuevos Campos Demográficos
     $genero = isset($_POST['genero']) ? $_POST['genero'] : '';
@@ -33,16 +37,32 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $row = $check->fetch_assoc();
         $cid_id = $row['id'];
         
-        // ACTUALIZAR DATOS SIEMPRE para mantener consistencia
-        $stmt_upd = $conn->prepare("UPDATE ciudadanos SET nombres=?, apellidos=?, telefono=?, email=?, direccion=?, genero=?, grupo_poblacional=?, zona_residencia=?, barrio_vereda=? WHERE id=?");
-        $stmt_upd->bind_param("sssssssssi", $nombres, $apellidos, $telefono, $email, $direccion, $genero, $grupo_poblacional, $zona_residencia, $barrio_vereda, $cid_id);
-        $stmt_upd->execute();
-        $stmt_upd->close();
+        // Si se recibe el flag 'actualizar_ciudadano', procedemos a actualizar
+        if (isset($_POST['actualizar_ciudadano']) && $_POST['actualizar_ciudadano'] == '1') {
+            // ACTUALIZAR DATOS
+            $stmt_upd = $conn->prepare("UPDATE ciudadanos SET nombres=?, apellidos=?, telefono=?, email=?, direccion=?, edad=?, genero=?, grupo_poblacional=?, zona_residencia=?, barrio_vereda=? WHERE id=?");
+            $stmt_upd->bind_param("sssssissisi", $nombres, $apellidos, $telefono, $email, $direccion, $edad, $genero, $grupo_poblacional, $zona_residencia, $barrio_vereda, $cid_id);
+            $stmt_upd->execute();
+            $stmt_upd->close();
+        } else {
+            // Si NO se envió confirmación de actualización, devolvemos alerta para preguntar
+             if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+                 header('Content-Type: application/json');
+                 echo json_encode([
+                     'status' => 'confirm_update', 
+                     'message' => 'El ciudadano con documento ' . $doc . ' ya existe en la base de datos.',
+                     'confirm_text' => '¿Desea actualizar los datos del ciudadano con la información ingresada y continuar con el trámite?'
+                 ]);
+                 exit;
+            } else {
+                 die("Error: El ciudadano ya existe. Use la opción de actualizar.");
+            }
+        }
         
     } else {
         // Crear Ciudadano
-        $stmt_c = $conn->prepare("INSERT INTO ciudadanos (tipo_documento, numero_documento, nombres, apellidos, telefono, email, direccion, genero, grupo_poblacional, zona_residencia, barrio_vereda) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-        $stmt_c->bind_param("sssssssssss", $tipo_doc, $doc, $nombres, $apellidos, $telefono, $email, $direccion, $genero, $grupo_poblacional, $zona_residencia, $barrio_vereda);
+        $stmt_c = $conn->prepare("INSERT INTO ciudadanos (tipo_documento, numero_documento, nombres, apellidos, telefono, email, direccion, edad, genero, grupo_poblacional, zona_residencia, barrio_vereda) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        $stmt_c->bind_param("sssssssissss", $tipo_doc, $doc, $nombres, $apellidos, $telefono, $email, $direccion, $edad, $genero, $grupo_poblacional, $zona_residencia, $barrio_vereda);
         $stmt_c->execute();
         $cid_id = $conn->insert_id;
         $stmt_c->close();
@@ -55,6 +75,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $nombre_tramite = $_POST['tipo_tramite']; // Recibe el nombre del trámite (String)
     $area_atencion = isset($_POST['area_atencion']) ? $_POST['area_atencion'] : ''; // Nuevo campo Area
+    
+    // Concatenar proceso interno si existe (Ej: AMPARO DE POBREZA - LABORAL)
+    if (!empty($_POST['procesos_internos'])) {
+        $area_atencion .= " - " . $_POST['procesos_internos'];
+    }
+    
     $obs = $_POST['observacion'];
     
     // -- LOGICA NUEVA: Resolver ID de Trámite por Nombre y Asignar Responsable --
@@ -157,7 +183,43 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Agregar traza
         $conn->query("INSERT INTO trazabilidad (radicado_id, usuario_id, accion, comentario) VALUES ($id_radicado, $usuario_asignado, 'Creación', 'Radicado creado exitosamente.')");
         
+        // --- LOGICA FIRMA DIGITAL ---
+        if (isset($_POST['firma_digital']) && !empty($_POST['firma_digital'])) {
+            $data_uri = $_POST['firma_digital'];
+            $encoded_image = explode(",", $data_uri)[1];
+            $decoded_image = base64_decode($encoded_image);
+            
+            // Crear directorio si no existe
+            $dir_firmas = '../assets/firmas/';
+            if (!file_exists($dir_firmas)) {
+                mkdir($dir_firmas, 0777, true);
+            }
+            
+            // Nombre de archivo único
+            $nombre_archivo = 'firma_ciudadano_' . $cid_id . '_' . time() . '.png';
+            $ruta_completa = $dir_firmas . $nombre_archivo;
+            
+            if (file_put_contents($ruta_completa, $decoded_image)) {
+                // Actualizar DB. Si falla porque no existe columna, intentamos crearla.
+                $ruta_relativa = 'assets/firmas/' . $nombre_archivo;
+                
+                // Intento 1: Actualizar asumiendo que existe columna
+                $sql_firma = "UPDATE ciudadanos SET firma_digital = '$ruta_relativa' WHERE id = $cid_id";
+                if (!$conn->query($sql_firma)) {
+                    // Si falla, intentamos agregar la columna y reintentar
+                    $conn->query("ALTER TABLE ciudadanos ADD firma_digital VARCHAR(255) DEFAULT NULL");
+                    $conn->query($sql_firma);
+                }
+            }
+        }
+        // ------------------------------
+
         // Redireccionar con éxito
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+             header('Content-Type: application/json');
+             echo json_encode(['status' => 'success', 'message' => "Radicado $codigo creado exitosamente."]);
+             exit;
+        }
         header("Location: ../index.php?msg=Radicado $codigo creado exitosamente");
     } else {
         echo "Error: " . $stmt_r->error;

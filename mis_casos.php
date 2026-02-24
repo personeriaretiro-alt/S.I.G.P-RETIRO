@@ -19,7 +19,7 @@ if ($filtro_estado) {
 // Consulta mejorada para incluir detalles completos del ciudadano
 $sql = "SELECT r.*, t.nombre as tipo,
         c.nombres, c.apellidos, c.numero_documento, c.tipo_documento, c.telefono, c.email,
-        c.genero, c.grupo_poblacional, c.zona_residencia, c.barrio_vereda
+        c.genero, c.grupo_poblacional, c.zona_residencia, c.barrio_vereda, c.firma_digital
         FROM radicados r 
         JOIN ciudadanos c ON r.ciudadano_id = c.id
         JOIN tipos_tramite t ON r.tipo_tramite_id = t.id
@@ -150,6 +150,11 @@ $result = $conn->query($sql);
                     <div class="col-6"><strong>Barrio/Vereda:</strong></div>
                     <div class="col-6" id="view_barrio"></div>
                 </div>
+
+                <div class="text-center mt-4 pt-3 border-top" id="view_firma_container" style="display:none;">
+                    <p class="mb-2 fw-bold text-success"><i class="fas fa-file-signature"></i> Firma Digital Autorizada</p>
+                    <img id="view_firma" src="" class="img-fluid border rounded p-2 bg-light shadow-sm" style="max-height: 120px;">
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
@@ -178,6 +183,29 @@ function verCiudadano(data) {
     el('view_zona').innerHTML = txt(data.zona_residencia);
     el('view_barrio').innerHTML = txt(data.barrio_vereda);
     
+    // Firma Digital - Debugging mejorado
+    var firmaContainer = document.getElementById('view_firma_container');
+    var firmaImg = document.getElementById('view_firma');
+
+    console.log('Objeto data completo:', data); // Ver en consola qué llega
+
+    // Asegurarnos de que firma_digital existe en el objeto data
+    // Nota: A veces la ruta puede venir con espacios o saltos de línea invisibles desde la DB
+    if (data.firma_digital && data.firma_digital.trim() !== '') {
+        console.log("Firma encontrada:", data.firma_digital);
+        firmaImg.src = data.firma_digital;
+        // Si la imagen falla al cargar (404), ocultamos el contenedor
+        firmaImg.onerror = function() {
+            console.log("Error al cargar la imagen de la firma (404). Ocultando contenedor.");
+            firmaContainer.style.display = 'none';
+        };
+        firmaContainer.style.display = 'block';
+    } else {
+        console.log("No se encontró firma válida para este usuario.");
+        firmaContainer.style.display = 'none';
+        firmaImg.src = '';
+    }
+
     new bootstrap.Modal(el('modalVerCiudadano')).show();
 }
 </script>

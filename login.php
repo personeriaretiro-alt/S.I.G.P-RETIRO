@@ -61,7 +61,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <form method="POST" action="">
         <div class="mb-3">
             <label class="form-label">Correo Electrónico</label>
-            <input type="email" name="email" class="form-control" required placeholder="funcionario@elretiro.gov.co">
+            <input type="text" name="email" class="form-control" required placeholder="funcionario@elretiro.gov.co">
         </div>
         <div class="mb-3">
             <label class="form-label">Contraseña</label>

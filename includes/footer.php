@@ -5,7 +5,7 @@
 
 <footer class="footer mt-auto py-3 bg-white text-center border-top">
   <div class="container">
-    <span class="text-muted small">© 2026 Personería Municipal de El Retiro | GovTech Solution</span>
+    <span class="text-muted small">© 2026 Personería Municipal de El Retiro</span>
   </div>
 </footer>
 
