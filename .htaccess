@@ -1,0 +1,19 @@
+# Evitar que se listen los directorios (seguridad)
+Options -Indexes
+
+# Proteger archivos sensibles
+<Files .env>
+    Order allow,deny
+    Deny from all
+</Files>
+
+# Rutas amigables y reescritura básica
+RewriteEngine On
+
+# Forzar HTTPS (Descomentar si tienes SSL activo en Hostinger)
+# RewriteCond %{HTTPS} off
+# RewriteRule ^(.*)$ https://%{HTTP_HOST}%{REQUEST_URI} [L,R=301]
+
+# Configuración PHP (Opcional, segun límites de Hostinger)
+# php_value upload_max_filesize 64M
+# php_value post_max_size 64M

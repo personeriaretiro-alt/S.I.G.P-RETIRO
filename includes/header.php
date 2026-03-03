@@ -139,9 +139,13 @@
             ?>
 
             <!-- SECCIÓN GESTIÓN -->
-            <?php if(in_array($rol, [1, 2, 3])): ?>
+            <?php if(in_array($rol, [1, 2, 3, 11, 12])): ?>
             <div class="text-white-50 px-3 mt-3 mb-1 small text-uppercase fw-bold">Gestión</div>
             <a href="nuevo_tramite.php" class="list-group-item list-group-item-action"><i class="fas fa-plus-circle me-2"></i> Nuevo Trámite</a>
+            <?php endif; ?>
+
+            <!-- MIS CASOS (Solo Admin y Personero) -->
+            <?php if(in_array($rol, [1, 2])): ?>
             <a href="mis_casos.php" class="list-group-item list-group-item-action"><i class="fas fa-folder-open me-2"></i> Mis Casos</a>
             <?php endif; ?>
             
@@ -150,7 +154,7 @@
             
             <!-- Solo Admin (1), Personero (2), Funcionario General (3) y Abg. Tutelas (11) -->
             <?php if(in_array($rol, [1, 2, 3, 11])): ?>
-            <a href="seguimiento_tutelas.php" class="list-group-item list-group-item-action"><i class="fas fa-gavel me-2"></i> Tutelas</a>
+            <a href="seguimiento_tutelas.php" class="list-group-item list-group-item-action"><i class="fas fa-gavel me-2"></i> Panel Juridico</a>
             <?php endif; ?>
 
             <!-- Solo Admin (1), Personero (2), Funcionario General (3) y Abg. Asesorias (12) -->

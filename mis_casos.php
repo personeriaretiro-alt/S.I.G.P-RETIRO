@@ -1,6 +1,14 @@
 <?php
 include 'conexion.php';
 include 'includes/auth.php';
+
+// Control de Acceso: Solo Rol Personero (2) o Admin (1)
+// Si el usuario no es personero o admin, lo enviamos al index
+if (!in_array($_SESSION['rol_id'], [1, 2])) {
+    echo "<script>window.location.href='index.php';</script>";
+    exit();
+}
+
 include 'includes/header.php';
 
 $id_usuario = $_SESSION['usuario_id'];

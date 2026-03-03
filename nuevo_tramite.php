@@ -27,23 +27,30 @@ $res_tipos = $conn->query($sql_tipos);
     <div class="col-md-10">
         <!-- Selector de Modo con Tarjetas Grandes -->
         <div class="row mb-4" id="selectorModo">
-            <div class="col-md-6 mb-3">
-                <div class="card text-center h-100 shadow-sm border-primary cursor-pointer hover-card" onclick="iniciarNuevoTramite('nuevo')">
-                    <div class="card-body py-5">
-                        <i class="fas fa-user-plus fa-3x text-primary mb-3"></i>
-                        <h4 class="card-title">Nuevo Ciudadano</h4>
-                        <p class="card-text text-muted">Registrar un ciudadano que no existe en el sistema e iniciar trámite.</p>
-                        <button class="btn btn-primary mt-2">Iniciar Registro</button>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 border-0 shadow-sm hover-card bg-primary text-white" onclick="iniciarNuevoTramite('nuevo')">
+                    <div class="card-body text-center p-5">
+                        <i class="fas fa-folder-plus fa-3x mb-3"></i>
+                        <h4>NUEVO CASO</h4>
+                        <p class="small opacity-75">Crear un nuevo radicado para una persona nueva o existente.</p>
                     </div>
                 </div>
             </div>
-            <div class="col-md-6 mb-3">
-                <div class="card text-center h-100 shadow-sm border-info cursor-pointer hover-card" onclick="iniciarNuevoTramite('existente')">
-                    <div class="card-body py-5">
-                        <i class="fas fa-search fa-3x text-info mb-3"></i>
-                        <h4 class="card-title">Actualizar / Ciudadano Existente</h4>
-                        <p class="card-text text-muted">Buscar ciudadano por documento para actualizar datos e iniciar trámite.</p>
-                        <button class="btn btn-info text-white mt-2">Buscar Ciudadano</button>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 border-0 shadow-sm hover-card bg-info text-white" onclick="iniciarNuevoTramite('solo_actualizacion')">
+                     <div class="card-body text-center p-5">
+                        <i class="fas fa-user-edit fa-3x mb-3"></i>
+                        <h4>ACTUALIZAR DATOS</h4>
+                        <p class="small opacity-75">Modificar información personal de un ciudadano sin crear caso.</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card h-100 border-0 shadow-sm hover-card bg-warning text-dark" onclick="iniciarNuevoTramite('actuacion_previa')">
+                     <div class="card-body text-center p-5">
+                        <i class="fas fa-link fa-3x mb-3"></i>
+                        <h4>TRAMITE PREVIO</h4>
+                         <p class="small opacity-75">Asociar recurso, impugnación o impedimento a un caso existente.</p>
                     </div>
                 </div>
             </div>
@@ -72,41 +79,40 @@ $res_tipos = $conn->query($sql_tipos);
                     <input type="hidden" name="actualizar_ciudadano" id="force_update" value="0">
                     
                     <!-- Sección Buscar Ciudadano (Oculta en modo actualización estricta inicial, pero visible en formulario) -->
-                    <h5 class="text-secondary border-bottom pb-2 mb-3">1. Datos del Ciudadano (Recepción)</h5>
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-4">
-                            <label class="form-label">Número Documento</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" name="documento" id="documento" required placeholder="Cédula / TI">
-                                <!-- Botón lupa original oculto en modo actualización porque ya buscó al inicio -->
-                                <button class="btn btn-outline-primary" type="button" id="btnBuscar" style="display: none;"><i class="fas fa-search"></i></button>
+                    <div id="datos_basicos_ciudadano">
+                        <h5 class="text-secondary border-bottom pb-2 mb-3">1. Datos del Ciudadano (Recepción)</h5>
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-4">
+                                <label class="form-label">Número Documento</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" name="documento" id="documento" required placeholder="Cédula / TI">
+                                    <!-- Botón lupa original oculto en modo actualización porque ya buscó al inicio -->
+                                    <button class="btn btn-outline-primary" type="button" id="btnBuscar" style="display: none;"><i class="fas fa-search"></i></button>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-md-4">
-                            <label class="form-label">Tipo Documento</label>
-                            <select class="form-select" name="tipo_documento" id="tipo_documento" required>
-                                <option value="CC">Cédula de Ciudadanía</option>
-                                <option value="TI">Tarjeta de Identidad</option>
-                                <option value="CE">Cédula Extranjería</option>
-                                <option value="PPT">Permiso P. Temporal</option>
-                            </select>
+                            <div class="col-md-4">
+                                <label class="form-label">Tipo Documento</label>
+                                <select class="form-select" name="tipo_documento" id="tipo_documento" required>
+                                    <option value="CC">Cédula de Ciudadanía</option>
+                                    <option value="TI">Tarjeta de Identidad</option>
+                                    <option value="CE">Cédula Extranjería</option>
+                                    <option value="PPT">Permiso P. Temporal</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
                     <div id="contenedorDatosPersonales">
                         <div class="row g-3 mb-3">
-
-
-                    <div class="row g-3 mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label">Nombres</label>
-                            <input type="text" class="form-control" name="nombres" id="nombres" required>
+                            <div class="col-md-6">
+                                <label class="form-label">Nombres</label>
+                                <input type="text" class="form-control" name="nombres" id="nombres" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Apellidos</label>
+                                <input type="text" class="form-control" name="apellidos" id="apellidos" required>
+                            </div>
                         </div>
-                        <div class="col-md-6">
-                            <label class="form-label">Apellidos</label>
-                            <input type="text" class="form-control" name="apellidos" id="apellidos" required>
-                        </div>
-                    </div>
 
                     <div class="row g-3 mb-4">
                          <div class="col-md-4">
@@ -167,22 +173,66 @@ $res_tipos = $conn->query($sql_tipos);
                     </div>
                 </div> <!-- END ContenedorDatosPersonales -->
 
+                <!-- SECCIÓN PARA ACTUACIÓN PREVIA (Sólo visible en este modo) -->
+                <div id="seccionActuacionPrevia" class="p-3 mb-4 bg-warning bg-opacity-10 border border-warning rounded" style="display: none;">
+                    <h5 class="text-warning-emphasis fw-bold border-bottom pb-2"><i class="fas fa-link"></i> Asociar a Trámite Existente</h5>
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Seleccione el Caso Principal (Padre) <span class="text-danger">*</span></label>
+                            <select class="form-select" name="parent_id" id="parent_id" onchange="verificarParent()">
+                                <option value="">Busque un ciudadano primero...</option>
+                            </select>
+                            <small class="text-muted">Despliega Tutelas y Derechos de Petición activos del ciudadano.</small>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tipo de Actuación <span class="text-danger">*</span></label>
+                            <select class="form-select" name="tipo_actuacion_previa" id="tipo_actuacion_previa">
+                                <option value="">Seleccione...</option>
+                                <option value="RECURSOS">RECURSOS</option>
+                                <option value="IMPUGNACIÓN">IMPUGNACIÓN</option>
+                                <option value="IMPEDIMENTO">IMPEDIMENTO</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Fecha Radicación Actuación <span class="text-danger">*</span></label>
+                            <input type="date" class="form-control" name="fecha_radicacion_actuacion" id="fecha_radicacion_actuacion">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                             <label class="form-label">Estado</label>
+                             <select class="form-select" name="estado_actuacion" id="estado_actuacion">
+                                <option value="ESTUDIO">ESTUDIO</option>
+                                <option value="PENDIENTE">PENDIENTE</option>
+                                <option value="RADICADO">RADICADO</option>
+                             </select>
+                        </div>
+                         <div class="col-md-6 mb-3">
+                            <label class="form-label">Decisión</label>
+                            <select class="form-select" name="decision_actuacion" id="decision_actuacion">
+                                <option value="">Seleccione...</option>
+                                <option value="SI">SI</option>
+                                <option value="NO">NO</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="seccionTramiteCompleto">
                     <!-- Sección Trámite -->
                     <h5 class="text-secondary border-bottom pb-2 mb-3">2. Información de Atención</h5>
                     
                     <div class="row g-3 mb-3">
                          <div class="col-md-6">
-                            <label class="form-label">Tipo de Atención</label>
+                            <label class="form-label">Tipo de Atención / Actuación</label>
                             <select class="form-select" name="tipo_tramite" id="tipo_tramite" required onchange="actualizarAreasAtencion()">
                                 <option selected disabled value="">Seleccione...</option>
-                                <option value="Asesorias">Asesorias</option>
-                                <option value="Demanda Ejecutiva">Demanda Ejecutiva</option>
-                                <option value="Derecho de Peticion">Derecho de Peticion</option>
-                                <option value="Incidentes">Incidentes</option>
-                                <option value="Quejas Disciplinarias">Quejas Disciplinarias</option>
+                                <option value="Asesorias">ASESORIAS</option>
+                                <option value="Demanda Ejecutiva">DEMANDA EJECUTIVA</option>
+                                <option value="Derecho de Peticion">DERECHO DE PETICION</option>
+                                <option value="Incidentes">INCIDENTES</option>
+                                <option value="Quejas Disciplinarias">QUEJAS DISCIPLINARIAS</option>
                                 <option value="TOMA DE DECLARACIONES RUV">TOMA DE DECLARACIONES RUV</option>
-                                <option value="Tramite">Tramite</option>
-                                <option value="Tutelas">Tutelas</option>
+                                <option value="Tramite">TRAMITE</option>
+                                <option value="Tutelas">TUTELAS</option>
                             </select>
                         </div>
                         <div class="col-md-6">
@@ -207,29 +257,28 @@ $res_tipos = $conn->query($sql_tipos);
                         </div>
                     </div>
 
-                    <!-- Asignación Inteligente -->
-                    <div class="row g-3 mb-3">
+                    <div class="row g-3 mb-3" id="divAyudaHumanitaria" style="display: none;">
                         <div class="col-md-12">
-                            <label class="form-label">Funcionario de Atención (Quien Registra)</label>
-                            <select class="form-select" name="usuario_asignado" id="usuario_asignado" required>
-                                <option value="">Seleccionar...</option>
-                                <?php
-                                $current_user = $_SESSION['usuario_id'] ?? 0;
-                                $sql_users = "SELECT id, nombre_completo, rol_id FROM usuarios WHERE estado='activo'";
-                                $res_users = $conn->query($sql_users);
-                                while($u = $res_users->fetch_assoc()) {
-                                    $selected = ($u['id'] == $current_user) ? "selected" : "";
-                                    echo "<option value='".$u['id']."' $selected>".$u['nombre_completo']."</option>";
-                                }
-                                ?>
+                            <label class="form-label">¿Se solicita ayuda humanitaria?</label>
+                            <select class="form-select" name="solicita_ayuda_humanitaria" id="solicita_ayuda_humanitaria">
+                                <option value="">Seleccione...</option>
+                                <option value="Si">Si</option>
+                                <option value="No">No</option>
                             </select>
-                            <small class="text-muted">Por defecto el sistema asigna el caso a quien lo está registrando.</small>
                         </div>
                     </div>
+
+                    <!-- Eliminado bloque duplicado de campos de actuación -->
+                    <!-- El bloque correcto es 'seccionActuacionPrevia' arriba -->
+
+
+
+                    <!-- Asignación Inteligente (Automática por Sesión) -->
+                    <!-- El sistema asigna automáticamente al usuario logueado en el backend -->
                     
                     <div class="mb-3">
-                        <label class="form-label">Observación Inicial (Recepción)</label>
-                        <textarea class="form-control" name="observacion" rows="3" placeholder="Describa brevemente la solicitud del ciudadano..." required></textarea>
+                        <label class="form-label">Observación Inicial (Recepción) ></label>
+                        <textarea class="form-control" name="observacion" rows="3" placeholder="Describa brevemente la solicitud del ciudadano..."></textarea>
                     </div>
 
                     <!-- Sección Habeas Data y Firma -->
@@ -247,10 +296,12 @@ $res_tipos = $conn->query($sql_tipos);
                         <input type="hidden" name="firma_digital" id="firma_digital_data">
                         <input type="hidden" name="habeas_data_aceptado" id="habeas_data_check_input" value="0">
                     </div>
+                </div>
+
 
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a href="index.php" class="btn btn-secondary me-md-2">Cancelar</a>
-                        <button type="submit" class="btn btn-primary" onclick="return validarHabeasData()"><i class="fas fa-paper-plane"></i> Crear Caso y Notificar Responsable</button>
+                        <button type="submit" class="btn btn-primary" id="btnSubmitForm" onclick="return validarHabeasData()"><i class="fas fa-paper-plane"></i> Crear Caso y Notificar Responsable</button>
                     </div>
 
                 </form>
@@ -263,6 +314,12 @@ $res_tipos = $conn->query($sql_tipos);
 
 <script>
 function validarHabeasData() {
+    var operacion = document.getElementById('modo_operacion').value;
+    // En modo solo actualización o actuación previa, no se requiere firma del ciudadano
+    if (operacion === 'solo_actualizacion' || operacion === 'actuacion_previa') {
+        return true;
+    }
+
     var aceptado = document.getElementById('habeas_data_check_input').value;
     if (aceptado != '1') {
         Swal.fire({
@@ -319,30 +376,76 @@ function iniciarNuevoTramite(modo) {
     
     // resetear estados
     document.getElementById('formRadicado').reset();
-    document.getElementById('force_update').value = (modo === 'existente') ? '1' : '0';
+    // En modo 'actuacion_previa' NO queremos actualizar datos del ciudadano accidentalmente, solo leer su ID
+    document.getElementById('force_update').value = (modo === 'existente' || modo === 'solo_actualizacion') ? '1' : '0';
+    
+    // Opcionalmente Resetear visibilidad por defecto
+    document.getElementById('seccionActuacionPrevia').style.display = 'none';
+    document.getElementById('parent_id').removeAttribute('required');
 
     if (modo === 'nuevo') {
         document.getElementById('tituloFormulario').innerHTML = '<i class="fas fa-user-plus me-2"></i>Nuevo Registro';
         document.getElementById('buscadorInicial').style.display = 'none';
         
         // Mostrar form completo y habilitado
+        document.getElementById('datos_basicos_ciudadano').style.display = 'block';
         document.getElementById('contenedorDatosPersonales').style.display = 'block';
-        toggleCampos(false); // false = no deshabilitados (habilitados)
+        document.getElementById('seccionTramiteCompleto').style.display = 'block';
+        toggleCampos(false); 
         document.getElementById('documento').readOnly = false;
         
-        // Habilitar la lupa interna por si acaso quieren verificar existencia
+        document.getElementById('modo_operacion').value = 'nuevo';
+        var btn = document.getElementById('btnSubmitForm');
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Crear Caso y Notificar Responsable';
+        btn.className = 'btn btn-primary';
+        
         document.getElementById('btnBuscar').style.display = 'block';
-
-    } else if (modo === 'existente') {
+        
+        document.getElementById('tipo_tramite').setAttribute('required', 'true');
+        document.getElementById('area_atencion').setAttribute('required', 'true');
+        
+    } else if (modo === 'existente' || modo === 'solo_actualizacion') {
         document.getElementById('tituloFormulario').innerHTML = '<i class="fas fa-edit me-2"></i>Actualizar Datos';
         document.getElementById('buscadorInicial').style.display = 'block';
-        
-        // Ocultar lupa interna ya que usan el buscador grande
         document.getElementById('btnBuscar').style.display = 'none';
         
-        // Bloquear campos hasta que busquen
-        toggleCampos(true); // true = deshabilitados
+        document.getElementById('datos_basicos_ciudadano').style.display = 'block';
+        document.getElementById('contenedorDatosPersonales').style.display = 'block';
+        document.getElementById('seccionTramiteCompleto').style.display = 'none';
+        
+        document.getElementById('modo_operacion').value = 'solo_actualizacion';
+        var btn = document.getElementById('btnSubmitForm');
+        btn.innerHTML = '<i class="fas fa-save"></i> Actualización de Datos';
+        btn.className = 'btn btn-success';
+        
+        document.getElementById('tipo_tramite').removeAttribute('required');
+        document.getElementById('area_atencion').removeAttribute('required');
+
+        toggleCampos(true); 
         document.getElementById('documento').readOnly = true;
+
+    } else if (modo === 'actuacion_previa') {
+        document.getElementById('tituloFormulario').innerHTML = '<i class="fas fa-link me-2"></i>Asociar Trámite Previo';
+        
+        document.getElementById('buscadorInicial').style.display = 'block';
+        document.getElementById('btnBuscar').style.display = 'none'; 
+        
+        // OCULTAR DATOS DE CIUDADANO QUE SOLICITÓ ELIMINAR 
+        document.getElementById('datos_basicos_ciudadano').style.display = 'none'; 
+        document.getElementById('contenedorDatosPersonales').style.display = 'none'; 
+        document.getElementById('seccionTramiteCompleto').style.display = 'none';
+        
+        document.getElementById('modo_operacion').value = 'actuacion_previa';
+        
+        var btn = document.getElementById('btnSubmitForm');
+        btn.innerHTML = '<i class="fas fa-link"></i> Registrar Actuación';
+        btn.className = 'btn btn-warning text-dark';
+        
+        document.getElementById('tipo_tramite').removeAttribute('required'); 
+        document.getElementById('area_atencion').removeAttribute('required'); 
+        document.getElementById('parent_id').setAttribute('required', 'true');
+
+        toggleCampos(true); 
     }
 }
 
@@ -370,12 +473,20 @@ function buscarParaActualizar() {
         Swal.fire('Error', 'Ingrese un documento válido para buscar.', 'warning');
         return;
     }
+    
+    // Recuperar modo si se perdió (Seguridad fallos JS)
+    var titulo = document.getElementById('tituloFormulario').innerText;
+    if (titulo.includes('Asociar')) {
+        currentMode = 'actuacion_previa';
+    } else if (titulo.includes('Actualizar')) {
+        currentMode = 'solo_actualizacion';
+    }
 
     fetch('controllers/buscar_ciudadano.php?cedula=' + doc)
     .then(response => response.json())
     .then(data => {
         if(data.found) {
-            // Llenar formulario
+            // Llenar formulario simple
             const d = data.data;
             document.getElementById('documento').value = d.numero_documento;
             document.getElementById('tipo_documento').value = d.tipo_documento;
@@ -384,26 +495,64 @@ function buscarParaActualizar() {
             document.getElementById('telefono').value = d.telefono;
             document.getElementById('email').value = d.email;
             document.getElementById('direccion').value = d.direccion;
+            
+            // Llenar selects si existen valores
             if(d.edad) document.getElementById('edad').value = d.edad;
             if(d.genero) document.getElementById('genero').value = d.genero;
             if(d.grupo_poblacional) document.getElementById('grupo_poblacional').value = d.grupo_poblacional;
             if(d.zona_residencia) document.getElementById('zona_residencia').value = d.zona_residencia;
             if(d.barrio_vereda) document.getElementById('barrio_vereda').value = d.barrio_vereda;
 
-            // Habilitar edición
-            toggleCampos(false); 
-            // Mantener documento bloqueado para evitar inconsistencias
-            document.getElementById('documento').readOnly = true; 
-            
             Swal.fire({
                 icon: 'success',
                 title: 'Ciudadano encontrado',
-                text: 'Puede actualizar la información y continuar con el trámite.',
-                timer: 2000,
+                text: 'Cargando información...',
+                timer: 1000,
                 showConfirmButton: false
             });
 
+             // LÓGICA IMPORTANTE: Visualización según modo
+             if (currentMode === 'actuacion_previa') {
+                // 1. Mostrar Panel de Actuación (Forzado)
+                var seccion = document.getElementById('seccionActuacionPrevia');
+                if (seccion) {
+                    seccion.style.display = 'block';
+                    seccion.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+
+                // 2. Ocultar TODO lo demás (Datos Ciudadano y Tramite Genérico)
+                var toHide = ['datos_basicos_ciudadano', 'contenedorDatosPersonales', 'seccionTramiteCompleto'];
+                toHide.forEach(id => {
+                    var el = document.getElementById(id);
+                    if(el) el.style.display = 'none';
+                });
+
+                // 3. Cargar select padre
+                if (d && d.id) {
+                    cargarTramitesPadre(d.id);
+                }
+                inicializarModoActuacionPrevia();
+                
+            } else {
+                // Modo Actualización Normal o Nuevo (si existía)
+                // Mostrar datos basicos
+                var toShow = ['datos_basicos_ciudadano', 'contenedorDatosPersonales'];
+                toShow.forEach(id => {
+                    var el = document.getElementById(id);
+                    if(el) el.style.display = 'block';
+                });
+                
+                // Habilitar campos para editar
+                toggleCampos(false); 
+                document.getElementById('documento').readOnly = true; 
+            }
+
         } else {
+             if (currentMode === 'actuacion_previa') {
+                 Swal.fire('Error', 'El ciudadano no existe. Debe registrarlo primero como Nuevo Caso.', 'error');
+                 return;
+             }
+             
              Swal.fire({
                 title: 'No encontrado',
                 text: "El ciudadano no existe. ¿Desea registrarlo como nuevo?",
@@ -423,6 +572,47 @@ function buscarParaActualizar() {
     .catch(err => console.error(err));
 }
 
+function cargarTramitesPadre(ciudadanoId) {
+    const selector = document.getElementById('parent_id');
+    selector.innerHTML = '<option value="">Cargando casos...</option>';
+    
+    fetch('controllers/buscar_tutelas_ciudadano.php?id=' + ciudadanoId)
+    .then(res => res.json())
+    .then(data => {
+        selector.innerHTML = '<option value="">Seleccione el caso asociado...</option>';
+        if(data.length > 0) {
+            data.forEach(caso => {
+                let opt = document.createElement('option');
+                opt.value = caso.id;
+                opt.text = `${caso.tipo_atencion} - Rad: ${caso.radicado || 'S/N'} (${caso.fecha_radicacion}) - ${caso.estado}`;
+                selector.add(opt);
+            });
+        } else {
+            let opt = document.createElement('option');
+            opt.text = "No se encontraron casos previos para este ciudadano";
+            selector.add(opt);
+        }
+    })
+    .catch(err => {
+        console.error(err);
+        selector.innerHTML = '<option value="">Error cargando casos</option>';
+    });
+}
+
+function verificarParent() {
+    // Si selecciona un padre, podría habilitar el boton de guardar o mostrar mas info
+}
+
+function inicializarModoActuacionPrevia() {
+    // Esconder campos genericos que no se usan aqui pero pueden ser required
+    document.getElementById('tipo_tramite').removeAttribute('required');
+    document.getElementById('area_atencion').removeAttribute('required');
+    
+    // Poner required a los nuevos
+    document.getElementById('fecha_radicacion_actuacion').setAttribute('required', 'true');
+    document.getElementById('tipo_actuacion_previa').setAttribute('required', 'true');
+}
+
 function toggleCampos(disabled) {
     const fields = ['tipo_documento', 'nombres', 'apellidos', 'telefono', 'email', 'direccion', 'edad', 'genero', 'grupo_poblacional', 'zona_residencia', 'barrio_vereda'];
     fields.forEach(id => {
@@ -437,10 +627,13 @@ function actualizarAreasAtencion() {
     const divProcesos = document.getElementById('divProcesosInternos');
     
     // Limpiar opciones previas
-    areaSelect.innerHTML = '<option selected disabled value="">Seleccione...</option>';
+    areaSelect.innerHTML = '<option selected disabled value="">SELECCIONE...</option>';
     
     // Ocultar procesos internos por defecto al cambiar tipo
     if(divProcesos) divProcesos.style.display = 'none';
+    
+    const divAyuda = document.getElementById('divAyudaHumanitaria');
+    if(divAyuda) divAyuda.style.display = 'none';
 
     let opciones = [];
 
@@ -451,30 +644,30 @@ function actualizarAreasAtencion() {
         ];
     } else if (tipo === 'Quejas Disciplinarias') {
         opciones = [
-            'Civil y/o Familia',
-            'Consumidor',
-            'Derechos Fundamentales',
-            'Financiero o seguros',
-            'Laboral',
-            'Penal',
-            'Pensiones',
-            'Salud',
-            'Victimas'
+            'CIVIL Y/O FAMILIA',
+            'CONSUMIDOR',
+            'DERECHOS FUNDAMENTALES',
+            'FINANCIERO O SEGUROS',
+            'LABORAL',
+            'PENAL',
+            'PENSIONES',
+            'SALUD',
+            'VICTIMAS'
         ];
-     } else if (tipo === 'TOMA DE DECLARACIONES RUV') {
-        opciones = ['Toma de Declaración']; 
+     } else if (tipo === 'TOMA DE DECLARACIONES RUV') { // Corregido para coincidir con el value
+        opciones = ['TOMA DE DECLARACION', 'SOLICITUD DE AYUDA HUMANITARIA']; 
     } else {
         // Opciones por defecto para otros trámites
         opciones = [
-            'Civil y/o Familia',
-            'Consumidor',
-            'Derechos Fundamentales',
-            'Financiero o seguros',
-            'Laboral',
-            'Penal',
-            'Pensiones',
-            'Salud',
-            'Victimas'
+            'CIVIL Y/O FAMILIA',
+            'CONSUMIDOR',
+            'DERECHOS FUNDAMENTALES',
+            'FINANCIERO O SEGUROS',
+            'LABORAL',
+            'PENAL',
+            'PENSIONES',
+            'SALUD',
+            'VICTIMAS'
         ];
     }
 
@@ -490,7 +683,10 @@ function verificarProcesosInternos() {
     const area = document.getElementById('area_atencion').value;
     const divProcesos = document.getElementById('divProcesosInternos');
     const inputProcesos = document.getElementById('procesos_internos');
+    const divAyuda = document.getElementById('divAyudaHumanitaria');
+    const inputAyuda = document.getElementById('solicita_ayuda_humanitaria');
     
+    // Lógica para AMPARO DE POBREZA
     if (area === 'AMPARO DE POBREZA') {
         if(divProcesos) divProcesos.style.display = 'block';
         if(inputProcesos) inputProcesos.setAttribute('required', 'true');
@@ -499,6 +695,18 @@ function verificarProcesosInternos() {
         if(inputProcesos) {
             inputProcesos.removeAttribute('required');
             inputProcesos.value = "";
+        }
+    }
+
+    // Lógica para SOLICITUD DE AYUDA HUMANITARIA
+    if (area === 'SOLICITUD DE AYUDA HUMANITARIA') {
+        if(divAyuda) divAyuda.style.display = 'block';
+        if(inputAyuda) inputAyuda.setAttribute('required', 'true');
+    } else {
+        if(divAyuda) divAyuda.style.display = 'none';
+        if(inputAyuda) {
+            inputAyuda.removeAttribute('required');
+            inputAyuda.value = "";
         }
     }
 }
@@ -521,10 +729,43 @@ document.getElementById('btnBuscar').addEventListener('click', function() {
 });
 
 // Forzar mayúsculas en campos de texto para consistencia
-['nombres', 'apellidos', 'direccion', 'barrio_vereda'].forEach(id => {
-    document.getElementById(id).addEventListener('input', function() {
-        this.value = this.value.toUpperCase();
-    });
+['direccion', 'barrio_vereda'].forEach(id => {
+    let el = document.getElementById(id);
+    if(el) {
+        el.addEventListener('input', function() {
+            this.value = this.value.toUpperCase();
+        });
+    }
+});
+
+// VALIDACIONES DE ENTRADA (Solo Números)
+['inputBusquedaDoc', 'documento', 'telefono', 'edad'].forEach(id => {
+    let el = document.getElementById(id);
+    if(el) {
+        el.addEventListener('input', function() {
+            // Reemplaza todo lo que NO sea número por vacío
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    }
+});
+
+// VALIDACIONES DE ENTRADA (Solo Texto - Nombres y Apellidos)
+// Permite letras, espacios y caracteres especiales de español
+['nombres', 'apellidos'].forEach(id => {
+    let el = document.getElementById(id);
+    if(el) {
+        el.addEventListener('input', function() {
+            // Primero convertimos a mayúsculas (ya estaba arriba pero aseguramos)
+            let start = this.selectionStart;
+            let end = this.selectionEnd;
+            
+            // Permitir letras, espacios y tildes/ñ
+            this.value = this.value.toUpperCase().replace(/[^A-ZÑÁÉÍÓÚÜ\s]/g, '');
+            
+            // Mantener posición del cursor
+            this.setSelectionRange(start, end);
+        });
+    }
 });
 
 // Forzar minúsculas en email, no tiene id en el input pero asumimos que es el de email

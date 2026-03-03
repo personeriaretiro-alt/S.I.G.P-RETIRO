@@ -42,10 +42,15 @@ $total_records = $conn->query($sql_count)->fetch_assoc()['total'] ?? 0;
 ?>
 
 <!-- Título Principal -->
-<div class="row mb-4">
-    <div class="col-md-12">
+<div class="row mb-4 align-items-center">
+    <div class="col-md-9">
         <h2 class="fw-bold" style="color: var(--color-primary);"><i class="fas fa-chalkboard-teacher"></i> Gestión de Asesorías</h2>
-        <p class="text-muted">Tablero de control y seguimiento de atenciones al ciudadano.</p>
+        <p class="text-muted mb-0">Tablero de control y seguimiento de atenciones al ciudadano.</p>
+    </div>
+    <div class="col-md-3 text-end">
+        <a href="nuevo_tramite.php" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus-circle me-2"></i> Nueva Asesoría
+        </a>
     </div>
 </div>
 
