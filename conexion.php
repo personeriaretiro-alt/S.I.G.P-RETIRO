@@ -1,15 +1,14 @@
-<?php
-define('DB_SERVER', '31.170.166.158');
-define('DB_USERNAME', 'u811517622_osFEN');
-define('DB_PASSWORD', 'I>;|rDDKj!0b');
-define('DB_NAME', 'u811517622_DVukR');
+ <?php
+$servername = "localhost";
+$username = "root";
+$password = "";
+$dbname = "personeria_retiro";
 
-$conexion = new mysqli(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
+// Crear conexión
+$conn = new mysqli($servername, $username, $password, $dbname);
 
-if ($conexion->connect_error) {
-    die("Error de conexión: " . $conexion->connect_error);
+// Verificar conexión
+if ($conn->connect_error) {
+    die("Conexión fallida: " . $conn->connect_error);
 }
-
-$conexion->query("SET time_zone = '-05:00'");
-
-$conexion->set_charset("utf8mb4");
+?>

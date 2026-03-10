@@ -17,6 +17,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // En producción SIEMPRE usar password_hash() y password_verify()
     
     $stmt = $conn->prepare($sql);
+    
+    if (!$stmt) {
+        // Esto ayudará a diagnosticar si la tabla no existe o hay error de sintaxis
+        die("Error preparando la consulta (¿Existe la tabla usuarios?): " . $conn->error);
+    }
+
     $stmt->bind_param("ss", $email, $password);
     $stmt->execute();
     $result = $stmt->get_result();

@@ -806,7 +806,6 @@ document.getElementById('formRadicado').addEventListener('submit', function(e) {
     .then(data => {
         if (data.status === 'success') {
             Swal.fire({
-                title: '¡Radicado Creado!',
                 text: data.message,
                 icon: 'success',
                 confirmButtonText: 'Aceptar'
