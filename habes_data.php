@@ -48,6 +48,12 @@
                             <button type="button" class="btn btn-outline-danger" id="clear-signature">
                                 <i class="fas fa-eraser"></i> Borrar Firma
                             </button>
+                            <div class="ms-2">
+                                <input type="file" id="upload-signature" accept="image/png, image/jpeg, image/webp" style="display: none;">
+                                <button type="button" class="btn btn-outline-primary" id="btn-upload-signature">
+                                    <i class="fas fa-upload"></i> Adjuntar Firma
+                                </button>
+                            </div>
                             <!-- El botón aceptar se habilitará por JS -->
                         </div>
                     </div>
@@ -90,10 +96,53 @@ document.addEventListener('DOMContentLoaded', function() {
         resizeCanvas();
     })
 
+    // Variable para almacenar la firma adjunta sin dibujarla en el canvas
+    var firmaAdjuntaBase64 = null;
+
     // Botón Borrar
     document.getElementById('clear-signature').addEventListener('click', function () {
         signaturePad.clear();
+        firmaAdjuntaBase64 = null;
+        document.getElementById('signature-pad').style.display = 'block';
+        
+        var msgAdjunto = document.getElementById('msg-firma-adjunta');
+        if(msgAdjunto) { msgAdjunto.remove(); }
+        
+        document.getElementById('upload-signature').value = '';
         validarFormularioModal();
+    });
+
+    // Botón Adjuntar Firma
+    document.getElementById('btn-upload-signature').addEventListener('click', function() {
+        document.getElementById('upload-signature').click();
+    });
+
+    // Procesar archivo adjunto
+    document.getElementById('upload-signature').addEventListener('change', function(e) {
+        var file = e.target.files[0];
+        if (!file) return;
+
+        var reader = new FileReader();
+        reader.onload = function(event) {
+            firmaAdjuntaBase64 = event.target.result;
+            
+            // Ocultar canvas y mostrar mensaje de éxito
+            document.getElementById('signature-pad').style.display = 'none';
+            var container = document.getElementById('signature-pad').parentElement;
+            
+            // Eliminar mensaje anterior si existe
+            var unMsg = document.getElementById('msg-firma-adjunta');
+            if(unMsg) unMsg.remove();
+            
+            var successMsg = document.createElement('div');
+            successMsg.id = 'msg-firma-adjunta';
+            successMsg.className = 'd-flex align-items-center justify-content-center w-100 h-100 text-success fw-bold';
+            successMsg.innerHTML = '<i class="fas fa-check-circle fa-2x me-2"></i> Firma adjuntada';
+            container.appendChild(successMsg);
+
+            validarFormularioModal();
+        };
+        reader.readAsDataURL(file);
     });
 
     // Validaciones para habilitar botón confirmar
@@ -101,7 +150,7 @@ document.addEventListener('DOMContentLoaded', function() {
     var btnConfirmar = document.getElementById('btnConfirmarFirma');
 
     function validarFormularioModal() {
-        if (!signaturePad.isEmpty() && checkTerminos.checked) {
+        if ((!signaturePad.isEmpty() || firmaAdjuntaBase64 !== null) && checkTerminos.checked) {
             btnConfirmar.disabled = false;
         } else {
             btnConfirmar.disabled = true;
@@ -113,8 +162,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Botón Confirmar
     btnConfirmar.addEventListener('click', function() {
-        if (signaturePad.isEmpty()) {
-            alert("Por favor ingrese su firma.");
+        if (signaturePad.isEmpty() && firmaAdjuntaBase64 === null) {
+            alert("Por favor ingrese o adjunte su firma.");
             return;
         } 
         if (!checkTerminos.checked) {
@@ -122,8 +171,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
-        // Guardar firma en input oculto
-        var dataURL = signaturePad.toDataURL();
+        // Guardar firma en input oculto (ya sea dibujada o adjuntada)
+        var dataURL = firmaAdjuntaBase64 !== null ? firmaAdjuntaBase64 : signaturePad.toDataURL();
         document.getElementById('firma_digital_data').value = dataURL;
         document.getElementById('habeas_data_check_input').value = '1';
 

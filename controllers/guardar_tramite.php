@@ -10,6 +10,21 @@ include '../conexion.php';
 ob_clean(); 
 session_start();
 
+// CAPTURAR TODAS LAS EXCEPCIONES FATALES (Ej: mysqli_sql_exception en PHP 8.1+)
+function my_exception_handler($e) {
+    if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+        header('Content-Type: application/json');
+        echo json_encode(['status' => 'error', 'message' => 'Excepción en servidor: ' . $e->getMessage()]);
+    } else {
+        echo "Excepción en servidor: " . $e->getMessage();
+    }
+    exit;
+}
+set_exception_handler('my_exception_handler');
+
+// Si por alguna razón observacion no viene, lo seteamos vacio para prevenir warnings
+$_POST['observacion'] = $_POST['observacion'] ?? '';
+
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
@@ -62,17 +77,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         else if ((isset($_POST['actualizar_ciudadano']) && $_POST['actualizar_ciudadano'] == '1') || $modo_operacion == 'solo_actualizacion') {
             // ACTUALIZAR DATOS
             $stmt_upd = $conn->prepare("UPDATE ciudadanos SET nombres=?, apellidos=?, telefono=?, email=?, direccion=?, edad=?, genero=?, grupo_poblacional=?, zona_residencia=?, barrio_vereda=?, habeas_data_aceptado=? WHERE id=?");
+            if (!$stmt_upd) {
+                if (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                    header('Content-Type: application/json');
+                    echo json_encode(['status' => 'error', 'message' => "Error preparando UPDATE ciudadanos (posible columna faltante): " . $conn->error]);
+                    exit;
+                } else {
+                    die("Error preparando UPDATE ciudadanos: " . $conn->error);
+                }
+            }
             $stmt_upd->bind_param("sssssissisii", $nombres, $apellidos, $telefono, $email, $direccion, $edad, $genero, $grupo_poblacional, $zona_residencia, $barrio_vereda, $habeas_data, $cid_id);
             $stmt_upd->execute();
             $stmt_upd->close();
-            
-            // Si es solo actualización, terminamos aquí
-            if ($modo_operacion == 'solo_actualizacion') {
-                 header('Content-Type: application/json');
-                 echo json_encode(['status' => 'success', 'message' => "Datos del ciudadano actualizados correctamente."]);
-                 exit;
-            }
-
         } else {
             // Si NO se envió confirmación de actualización, devolvemos alerta para preguntar (Solo en modo registro nuevo)
              if(!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
@@ -94,18 +110,51 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     } else {
         // Crear Ciudadano
         $stmt_c = $conn->prepare("INSERT INTO ciudadanos (tipo_documento, numero_documento, nombres, apellidos, telefono, email, direccion, edad, genero, grupo_poblacional, zona_residencia, barrio_vereda, habeas_data_aceptado) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+        if (!$stmt_c) {
+            if (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+                header('Content-Type: application/json');
+                echo json_encode(['status' => 'error', 'message' => "Error preparando INSERT ciudadanos (posible columna faltante): " . $conn->error]);
+                exit;
+            } else {
+                die("Error preparando INSERT ciudadanos: " . $conn->error);
+            }
+        }
         $stmt_c->bind_param("sssssssissssi", $tipo_doc, $doc, $nombres, $apellidos, $telefono, $email, $direccion, $edad, $genero, $grupo_poblacional, $zona_residencia, $barrio_vereda, $habeas_data);
         $stmt_c->execute();
         $cid_id = $conn->insert_id;
         $stmt_c->close();
+    }
 
-        // Si por alguna razón estamos en 'solo_actualizacion' pero el ciudadano no existía, lo creamos y paramos.
-        // ("Actualizar Datos" de alguien que en realidad no existía, se convierte en registro de persona sin caso)
-        if ($modo_operacion == 'solo_actualizacion') {
-             header('Content-Type: application/json');
-             echo json_encode(['status' => 'success', 'message' => "Ciudadano registrado correctamente en la base de datos."]);
-             exit;
+    // --- LÓGICA FIRMA DIGITAL PARA CIUDADANO (NUEVO O ACTUALIZADO) ---
+    if (isset($_POST['firma_digital']) && !empty($_POST['firma_digital'])) {
+        $data_uri = $_POST['firma_digital'];
+        $encoded_image = explode(",", $data_uri)[1];
+        if ($encoded_image) {
+            $decoded_image = base64_decode($encoded_image);
+            
+            $dir_firmas = '../assets/firmas/';
+            if (!file_exists($dir_firmas)) { mkdir($dir_firmas, 0777, true); }
+            
+            $nombre_archivo = 'firma_ciudadano_' . $cid_id . '_' . time() . '.png';
+            $ruta_completa = $dir_firmas . $nombre_archivo;
+            
+            if (file_put_contents($ruta_completa, $decoded_image)) {
+                $ruta_relativa = 'assets/firmas/' . $nombre_archivo;
+                $sql_firma = "UPDATE ciudadanos SET firma_digital = '$ruta_relativa' WHERE id = $cid_id";
+                if (!$conn->query($sql_firma)) {
+                    $conn->query("ALTER TABLE ciudadanos ADD firma_digital VARCHAR(255) DEFAULT NULL");
+                    $conn->query($sql_firma);
+                }
+            }
         }
+    }
+    // -----------------------------------------------------------------
+
+    // Si es solo actualización (haya existido o no), terminamos aquí
+    if ($modo_operacion == 'solo_actualizacion') {
+         header('Content-Type: application/json');
+         echo json_encode(['status' => 'success', 'message' => "Datos del ciudadano actualizados correctamente."]);
+         exit;
     }
 
     // 2. Datos del Trámite
@@ -154,8 +203,23 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     
     // -- LOGICA NUEVA: Resolver ID de Trámite por Nombre y Asignar Responsable --
     
+    // Primero asegurarnos de que sla_horas exista en la tabla tipos_tramite
+    $check_sla = $conn->query("SHOW COLUMNS FROM tipos_tramite LIKE 'sla_horas'");
+    if ($check_sla && $check_sla->num_rows == 0) {
+        $conn->query("ALTER TABLE tipos_tramite ADD COLUMN sla_horas INT DEFAULT 48");
+    }
+
     // Buscar el ID del trámite en la BD basado en el nombre seleccionado
     $stmt_t = $conn->prepare("SELECT id, sla_horas FROM tipos_tramite WHERE nombre = ?");
+    if (!$stmt_t) {
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH'])) {
+            header('Content-Type: application/json');
+            echo json_encode(['status' => 'error', 'message' => "Error en la consulta de tipos_tramite: " . $conn->error]);
+            exit;
+        } else {
+            die("Error en la consulta de tipos_tramite: " . $conn->error);
+        }
+    }
     $stmt_t->bind_param("s", $nombre_tramite);
     $stmt_t->execute();
     $res_t = $stmt_t->get_result();
@@ -163,19 +227,22 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     if ($res_t->num_rows > 0) {
         $row_t = $res_t->fetch_assoc();
         $tipo_tramite_id = $row_t['id'];
-        $sla = $row_t['sla_horas'];
+        $sla = $row_t['sla_horas'] ?? 48; // Fallback si viene nulo
     } else {
         // TRAMITE NUEVO: Si no existe, lo creamos dinámicamente
         $sla = 48; // SLA por defecto (48 horas)
-        // Ajustes específicos de SLA para los nuevos tipos
-        if ($nombre_tramite == 'Derecho de Peticion') $sla = 360; // 15 días
+        if ($nombre_tramite == 'Derecho de Peticion') $sla = 360; 
         if ($nombre_tramite == 'Tutelas') $sla = 48; 
         if ($nombre_tramite == 'Incidentes') $sla = 72;
         
         $stmt_new = $conn->prepare("INSERT INTO tipos_tramite (nombre, sla_horas) VALUES (?, ?)");
-        $stmt_new->bind_param("si", $nombre_tramite, $sla);
-        $stmt_new->execute();
-        $tipo_tramite_id = $conn->insert_id;
+        if ($stmt_new) {
+            $stmt_new->bind_param("si", $nombre_tramite, $sla);
+            $stmt_new->execute();
+            $tipo_tramite_id = $conn->insert_id;
+        } else {
+            $tipo_tramite_id = 1; // Fallback seguro
+        }
     }
     $stmt_t->close();
 
@@ -204,18 +271,35 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $fecha_vence->modify("+{$sla} hours");
     $fecha_vence_str = $fecha_vence->format('Y-m-d H:i:s');
 
+    // Verificar AUTOMÁTICAMENTE si la columna existe en radicados
+    $check_area = $conn->query("SHOW COLUMNS FROM radicados LIKE 'area_atencion'");
+    if ($check_area && $check_area->num_rows == 0) {
+        $conn->query("ALTER TABLE radicados ADD COLUMN area_atencion VARCHAR(150) DEFAULT NULL AFTER tipo_tramite_id");
+    }
+
     // Insertar Radicado usando el ID resuelto
     // IMPORTANTE: Asegurate de que la tabla 'radicados' tenga la columna 'area_atencion'
     // Ejecuta en tu DB: ALTER TABLE radicados ADD COLUMN area_atencion VARCHAR(100) AFTER tipo_tramite_id;
     $stmt_r = $conn->prepare("INSERT INTO radicados (codigo_radicado, ciudadano_id, tipo_tramite_id, area_atencion, usuario_asignado_id, fecha_vencimiento, observacion_inicial) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    
+    if (!$stmt_r) {
+        if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
+            header('Content-Type: application/json');
+            echo json_encode(['status' => 'error', 'message' => "Error preparando statement para radicados: " . $conn->error]);
+            exit;
+        } else {
+            die("Error preparando statement para radicados: " . $conn->error);
+        }
+    }
+    
     $stmt_r->bind_param("siisiss", $codigo, $cid_id, $tipo_tramite_id, $area_atencion, $usuario_asignado, $fecha_vence_str, $obs);
     
     if ($stmt_r->execute()) {
         $id_radicado = $conn->insert_id;
         
-        // --- LOGICA ESPECIFICA PARA TUTELAS Y DERECHOS DE PETICIÓN ---
-        // Ambos van a la tabla de tutelas para gestión centralizada
-        if ($nombre_tramite == 'Tutelas' || $nombre_tramite == 'Derecho de Peticion' || $nombre_tramite == 'Incidentes' || !empty($_POST['parent_id'])) {
+        // --- LOGICA ESPECIFICA PARA TUTELAS, DERECHOS DE PETICIÓN, INCIDENTES Y ASESORIAS ---
+        // Todos estos van a la tabla de tutelas para gestión centralizada en el Seguimiento
+        if ($nombre_tramite == 'Tutelas' || $nombre_tramite == 'Derecho de Peticion' || $nombre_tramite == 'Incidentes' || $nombre_tramite == 'Asesorias' || !empty($_POST['parent_id'])) {
             
             // Verificación AUTOMÁTICA de columnas para evitar fallos si no se corrió el setup
             // Esto asegura que el sistema sea resiliente a faltas de actualización manual de DB
@@ -235,9 +319,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             // USUARIO QUE REGISTRA: Es el mismo usuario_actual que inició sesión
             $usuario_que_registra = $_SESSION['usuario_id'];
             
-            // TIPO TRAMITE: 'Tutela' o 'Derecho de Peticion', normalizar para BD
-            $tipo_db = ($nombre_tramite == 'Derecho de Peticion') ? 'Derecho de Petición' : 'Tutela';
-            if($nombre_tramite == 'Incidentes') $tipo_db = 'Incidente';
+            // TIPO TRAMITE: Normalizar para BD
+            $tipo_db = 'Tutela';
+            if ($nombre_tramite == 'Derecho de Peticion') $tipo_db = 'Derecho de Petición';
+            if ($nombre_tramite == 'Incidentes') $tipo_db = 'Incidente';
+            if ($nombre_tramite == 'Asesorias') $tipo_db = 'Asesoria';
 
             // Datos de Actuación Previa (Sub-casos)
             $parent_id = !empty($_POST['parent_id']) ? $_POST['parent_id'] : null;
@@ -332,37 +418,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Agregar traza
         $conn->query("INSERT INTO trazabilidad (radicado_id, usuario_id, accion, comentario) VALUES ($id_radicado, $usuario_asignado, 'Creación', 'Radicado creado exitosamente.')");
         
-        // --- LOGICA FIRMA DIGITAL ---
-        if (isset($_POST['firma_digital']) && !empty($_POST['firma_digital'])) {
-            $data_uri = $_POST['firma_digital'];
-            $encoded_image = explode(",", $data_uri)[1];
-            $decoded_image = base64_decode($encoded_image);
-            
-            // Crear directorio si no existe
-            $dir_firmas = '../assets/firmas/';
-            if (!file_exists($dir_firmas)) {
-                mkdir($dir_firmas, 0777, true);
-            }
-            
-            // Nombre de archivo único
-            $nombre_archivo = 'firma_ciudadano_' . $cid_id . '_' . time() . '.png';
-            $ruta_completa = $dir_firmas . $nombre_archivo;
-            
-            if (file_put_contents($ruta_completa, $decoded_image)) {
-                // Actualizar DB. Si falla porque no existe columna, intentamos crearla.
-                $ruta_relativa = 'assets/firmas/' . $nombre_archivo;
-                
-                // Intento 1: Actualizar asumiendo que existe columna
-                $sql_firma = "UPDATE ciudadanos SET firma_digital = '$ruta_relativa' WHERE id = $cid_id";
-                if (!$conn->query($sql_firma)) {
-                    // Si falla, intentamos agregar la columna y reintentar
-                    $conn->query("ALTER TABLE ciudadanos ADD firma_digital VARCHAR(255) DEFAULT NULL");
-                    $conn->query($sql_firma);
-                }
-            }
-        }
-        // ------------------------------
-
         // Redireccionar con éxito
         if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) == 'xmlhttprequest') {
              header('Content-Type: application/json');

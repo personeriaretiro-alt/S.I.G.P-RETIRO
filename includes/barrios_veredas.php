@@ -1,0 +1,50 @@
+<datalist id="lista_barrios_veredas">
+    <!-- Barrios Urbanos (El Retiro) -->
+    <option value="EL CENTRO">
+    <option value="EL CAMINO O EL LLANO">
+    <option value="BANDERAS">
+    <option value="SAN JOSE">
+    <option value="EL CANTON">
+    <option value="EL PINO">
+    <option value="PINARES">
+    <option value="LAURELES">
+    <option value="LA ACUARELA">
+    <option value="VILLAS DE SAN JUAN">
+    <option value="LOS MOLINOS">
+    <option value="EL ROSARIO">
+    <option value="BICENTENARIO">
+    <option value="MARTIN PESCADOR">
+    <option value="MACEO">
+    <option value="LA MARIA">
+    <option value="OTROS (URBANO)">
+
+    <!-- Veredas (Rural - El Retiro) -->
+    <option value="CARRIZALES">
+    <option value="DON DIEGO">
+    <option value="EL CARMEN">
+    <option value="EL CHUSCAL">
+    <option value="EL PORVENIR">
+    <option value="EL PORTENTO">
+    <option value="EL SALADO">
+    <option value="EL PLAN">
+    <option value="LA AMARILLA">
+    <option value="LA CANDELARIA">
+    <option value="LA CLARA">
+    <option value="LA FE">
+    <option value="LA HONDA">
+    <option value="LA LUZ">
+    <option value="LA LUZ (SECTOR LA ESTACION)">
+    <option value="LA MACARENA">
+    <option value="LEJANIAS">
+    <option value="LOS MEDIOS">
+    <option value="LOS SALADOS">
+    <option value="NAZARETH">
+    <option value="NORMANDIA">
+    <option value="PANTANILLO">
+    <option value="PUENTE PELAEZ">
+    <option value="TABACAL">
+    <option value="SAN ISIDRO">
+    <option value="SAN JUAN">
+    <option value="SANTA ELENA">
+    <option value="OTROS (RURAL)">
+</datalist>

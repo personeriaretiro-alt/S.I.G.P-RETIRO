@@ -1,0 +1,55 @@
+[11-Mar-2026 20:45:30 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'edad' in 'field list' in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php:64
+Stack trace:
+#0 C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php(64): mysqli->prepare('UPDATE ciudadan...')
+#1 {main}
+  thrown in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php on line 64
+[11-Mar-2026 20:50:11 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'edad' in 'field list' in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php:88
+Stack trace:
+#0 C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php(88): mysqli->prepare('INSERT INTO ciu...')
+#1 {main}
+  thrown in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php on line 88
+[11-Mar-2026 20:50:40 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'edad' in 'field list' in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php:88
+Stack trace:
+#0 C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php(88): mysqli->prepare('INSERT INTO ciu...')
+#1 {main}
+  thrown in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php on line 88
+[11-Mar-2026 20:50:43 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'edad' in 'field list' in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php:88
+Stack trace:
+#0 C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php(88): mysqli->prepare('INSERT INTO ciu...')
+#1 {main}
+  thrown in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php on line 88
+[11-Mar-2026 20:51:44 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'edad' in 'field list' in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php:88
+Stack trace:
+#0 C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php(88): mysqli->prepare('INSERT INTO ciu...')
+#1 {main}
+  thrown in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php on line 88
+[11-Mar-2026 20:54:29 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'edad' in 'field list' in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php:88
+Stack trace:
+#0 C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php(88): mysqli->prepare('INSERT INTO ciu...')
+#1 {main}
+  thrown in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php on line 88
+[11-Mar-2026 20:54:33 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'edad' in 'field list' in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php:88
+Stack trace:
+#0 C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php(88): mysqli->prepare('INSERT INTO ciu...')
+#1 {main}
+  thrown in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php on line 88
+[11-Mar-2026 20:55:15 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'edad' in 'field list' in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php:88
+Stack trace:
+#0 C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php(88): mysqli->prepare('INSERT INTO ciu...')
+#1 {main}
+  thrown in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php on line 88
+[11-Mar-2026 21:31:04 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'edad' in 'field list' in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php:97
+Stack trace:
+#0 C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php(97): mysqli->prepare('INSERT INTO ciu...')
+#1 {main}
+  thrown in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php on line 97
+[11-Mar-2026 21:53:30 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'edad' in 'field list' in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php:64
+Stack trace:
+#0 C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php(64): mysqli->prepare('UPDATE ciudadan...')
+#1 {main}
+  thrown in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php on line 64
+[11-Mar-2026 21:54:33 Europe/Berlin] PHP Fatal error:  Uncaught mysqli_sql_exception: Unknown column 'edad' in 'field list' in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php:97
+Stack trace:
+#0 C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php(97): mysqli->prepare('INSERT INTO ciu...')
+#1 {main}
+  thrown in C:\xampp\htdocs\Personeria_Retiro\controllers\guardar_tramite.php on line 97

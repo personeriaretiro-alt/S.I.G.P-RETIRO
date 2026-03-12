@@ -376,6 +376,21 @@ $total_pages = ceil($total_records / $limit);
                          </div>
                     </div>
 
+                    <!-- SECCIÓN ESPECIAL PARA ASESORÍAS (Edit Mode) -->
+                    <div id="seccion_asesoria" style="display: none;" class="bg-info bg-opacity-10 p-3 rounded mb-3 border border-info">
+                         <h6 class="text-dark fw-bold border-bottom border-info pb-2"><i class="fas fa-chalkboard-teacher"></i> Estado de la Asesoría</h6>
+                         <div class="row g-3">
+                            <div class="col-md-12">
+                                <label class="form-label">Estado General</label>
+                                <select class="form-select" name="estado_asesoria" id="mod_estado_asesoria">
+                                    <option value="Pendiente">Pendiente</option>
+                                    <option value="En Trámite">En Trámite</option>
+                                    <option value="Finalizado">Finalizado</option>
+                                </select>
+                            </div>
+                         </div>
+                    </div>
+
                     <div id="seccion_tutela_normal">
                         <div class="row g-3 mb-3">
                             <div class="col-md-6">
@@ -417,8 +432,7 @@ $total_pages = ceil($total_records / $limit);
                                 <label class="form-label">Tipo Fallo</label>
                                 <select class="form-select" name="concedio_tutela" id="mod_fallo">
                                     <option value="">Seleccione...</option>
-                                    <option value="A favor">A favor</option>
-                                    <option value="En contra">En contra</option>
+                                    <option value="Niega">Niega</option>
                                     <option value="Parcial">Parcial</option>
                             </select>
                         </div>
@@ -475,13 +489,17 @@ $total_pages = ceil($total_records / $limit);
                             </select>
                         </div>
                     </div>
+                    </div> <!-- Fin Sección Normal -->
 
                     <div class="mb-3">
-                        <label class="form-label">Observaciones</label>
-                        <textarea class="form-control" name="observaciones" rows="3"></textarea>
+                        <label class="form-label text-primary"><i class="fas fa-history"></i> Historial de Observaciones</label>
+                        <textarea class="form-control" name="observaciones" rows="4" readonly style="background-color: #f8f9fa; font-size: 0.95em;"></textarea>
                     </div>
 
-                    </div> <!-- Fin Sección Normal -->
+                    <div class="mb-3 border-start border-3 border-primary ps-3 pb-2 bg-light rounded">
+                        <label class="form-label fw-bold mt-2"><i class="fas fa-plus-circle text-primary"></i> Agregar Nueva Observación</label>
+                        <textarea class="form-control" name="nueva_observacion" rows="3" placeholder="Escriba aquí para agregar una nueva observación..."></textarea>
+                    </div>
 
                     <div class="d-grid">
                         <button type="submit" class="btn btn-primary">Guardar Cambios</button>
@@ -626,6 +644,7 @@ function editarTutela(data) {
     
     var secNormal = document.getElementById('seccion_tutela_normal');
     var secActuacion = document.getElementById('seccion_actuacion_previa');
+    var secAsesoria = document.getElementById('seccion_asesoria');
     
     // Helper to toggle inputs disabled state
     var toggleInputs = function(container, disable) {
@@ -634,14 +653,32 @@ function editarTutela(data) {
             input.disabled = disable;
         });
     };
+    
+    var isAsesoria = data.tipo_tramite && data.tipo_tramite.toUpperCase() === 'ASESORIA';
 
-    if (isSubCase) {
+    if (isAsesoria) {
+        // Mode: Asesoria
+        secNormal.style.display = 'none';
+        secActuacion.style.display = 'none';
+        secAsesoria.style.display = 'block';
+        
+        toggleInputs(secNormal, true);
+        toggleInputs(secActuacion, true);
+        toggleInputs(secAsesoria, false);
+        
+        el('mod_estado_asesoria').value = data.estado || 'Pendiente';
+        
+        if(el('tipo_tramite_actual')) el('tipo_tramite_actual').value = 'ASESORIA';
+
+    } else if (isSubCase) {
         // Mode: Actuación Previa
         secNormal.style.display = 'none';
         secActuacion.style.display = 'block';
+        secAsesoria.style.display = 'none';
         
         toggleInputs(secNormal, true); // Disable normal fields
         toggleInputs(secActuacion, false); // Enable sub-case fields
+        toggleInputs(secAsesoria, true);
         
         // Populate Sub-case fields
         el('mod_tipo_actuacion').value = data.tipo_atencion || 'RECURSOS';
@@ -656,9 +693,11 @@ function editarTutela(data) {
         // Mode: Tutela Normal
         secNormal.style.display = 'block';
         secActuacion.style.display = 'none';
+        secAsesoria.style.display = 'none';
         
         toggleInputs(secNormal, false); // Enable normal fields
         toggleInputs(secActuacion, true); // Disable sub-case fields
+        toggleInputs(secAsesoria, true);
         
         // Populate Normal fields
         el('mod_radicado').value = data.radicado_tutela || '';
@@ -690,6 +729,9 @@ function editarTutela(data) {
     // Obervations
     if(document.querySelector('textarea[name="observaciones"]')) {
         document.querySelector('textarea[name="observaciones"]').value = data.observaciones || '';
+    }
+    if(document.querySelector('textarea[name="nueva_observacion"]')) {
+        document.querySelector('textarea[name="nueva_observacion"]').value = '';
     }
 
     var myModal = new bootstrap.Modal(document.getElementById('modalEditarTutela'));

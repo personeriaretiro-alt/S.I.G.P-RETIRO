@@ -141,6 +141,8 @@ $res_tipos = $conn->query($sql_tipos);
                                 <option value="Masculino">Masculino</option>
                                 <option value="Femenino">Femenino</option>
                                 <option value="LGTBIQ+">LGTBIQ+</option>
+                                <option value="No binario">No binario</option>
+                                <option value="Trans">Trans</option>
                                 <option value="Otro">Otro</option>
                             </select>
                         </div>
@@ -168,7 +170,8 @@ $res_tipos = $conn->query($sql_tipos);
                         </div>
                         <div class="col-md-3">
                             <label class="form-label">Barrio o Vereda</label>
-                            <input type="text" class="form-control" name="barrio_vereda" id="barrio_vereda">
+                            <input class="form-control" name="barrio_vereda" id="barrio_vereda" list="lista_barrios_veredas" autocomplete="off" placeholder="Escriba para buscar...">
+                            <?php include 'includes/barrios_veredas.php'; ?>
                         </div>
                     </div>
                 </div> <!-- END ContenedorDatosPersonales -->
@@ -228,10 +231,8 @@ $res_tipos = $conn->query($sql_tipos);
                                 <option value="Asesorias">ASESORIAS</option>
                                 <option value="Demanda Ejecutiva">DEMANDA EJECUTIVA</option>
                                 <option value="Derecho de Peticion">DERECHO DE PETICION</option>
-                                <option value="Incidentes">INCIDENTES</option>
                                 <option value="Quejas Disciplinarias">QUEJAS DISCIPLINARIAS</option>
                                 <option value="TOMA DE DECLARACIONES RUV">TOMA DE DECLARACIONES RUV</option>
-                                <option value="Tramite">TRAMITE</option>
                                 <option value="Tutelas">TUTELAS</option>
                             </select>
                         </div>
@@ -268,11 +269,6 @@ $res_tipos = $conn->query($sql_tipos);
                         </div>
                     </div>
 
-                    <!-- Eliminado bloque duplicado de campos de actuación -->
-                    <!-- El bloque correcto es 'seccionActuacionPrevia' arriba -->
-
-
-
                     <!-- Asignación Inteligente (Automática por Sesión) -->
                     <!-- El sistema asigna automáticamente al usuario logueado en el backend -->
                     
@@ -281,23 +277,23 @@ $res_tipos = $conn->query($sql_tipos);
                         <textarea class="form-control" name="observacion" rows="3" placeholder="Describa brevemente la solicitud del ciudadano..."></textarea>
                     </div>
 
-                    <!-- Sección Habeas Data y Firma -->
-                    <div class="mb-4 p-3 bg-light border rounded">
-                        <h5 class="text-secondary"><i class="fas fa-file-contract"></i> Autorización y Firma</h5>
-                        <p class="text-muted small">Es obligatorio que el ciudadano autorice el tratamiento de datos y firme digitalmente para continuar.</p>
-                        
-                        <div class="d-grid gap-2">
-                            <button type="button" class="btn btn-warning btn-lg" id="btnAbrirHabeas" data-bs-toggle="modal" data-bs-target="#modalHabeasData">
-                                <i class="fas fa-signature"></i> Firmar y Autorizar Tratamiento de Datos
-                            </button>
-                        </div>
-                        
-                        <!-- Campos ocultos para almacenar la firma y la confirmación -->
-                        <input type="hidden" name="firma_digital" id="firma_digital_data">
-                        <input type="hidden" name="habeas_data_aceptado" id="habeas_data_check_input" value="0">
-                    </div>
-                </div>
+                </div> <!-- Cierre de seccionTramiteCompleto -->
 
+                <!-- Sección Habeas Data y Firma -->
+                <div id="seccionFirma" class="mb-4 p-3 bg-light border rounded">
+                    <h5 class="text-secondary"><i class="fas fa-file-contract"></i> Autorización y Firma</h5>
+                    <p class="text-muted small">Es obligatorio que el ciudadano autorice el tratamiento de datos y firme digitalmente para crear un caso. También puede actualizar solo la firma si lo desea.</p>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="button" class="btn btn-warning btn-lg" id="btnAbrirHabeas" data-bs-toggle="modal" data-bs-target="#modalHabeasData">
+                            <i class="fas fa-signature"></i> Firmar y Autorizar Tratamiento de Datos
+                        </button>
+                    </div>
+                    
+                    <!-- Campos ocultos para almacenar la firma y la confirmación -->
+                    <input type="hidden" name="firma_digital" id="firma_digital_data">
+                    <input type="hidden" name="habeas_data_aceptado" id="habeas_data_check_input" value="0">
+                </div>
 
                     <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                         <a href="index.php" class="btn btn-secondary me-md-2">Cancelar</a>
@@ -391,6 +387,7 @@ function iniciarNuevoTramite(modo) {
         document.getElementById('datos_basicos_ciudadano').style.display = 'block';
         document.getElementById('contenedorDatosPersonales').style.display = 'block';
         document.getElementById('seccionTramiteCompleto').style.display = 'block';
+        document.getElementById('seccionFirma').style.display = 'block';
         toggleCampos(false); 
         document.getElementById('documento').readOnly = false;
         
@@ -412,6 +409,7 @@ function iniciarNuevoTramite(modo) {
         document.getElementById('datos_basicos_ciudadano').style.display = 'block';
         document.getElementById('contenedorDatosPersonales').style.display = 'block';
         document.getElementById('seccionTramiteCompleto').style.display = 'none';
+        document.getElementById('seccionFirma').style.display = 'block';
         
         document.getElementById('modo_operacion').value = 'solo_actualizacion';
         var btn = document.getElementById('btnSubmitForm');
@@ -434,6 +432,7 @@ function iniciarNuevoTramite(modo) {
         document.getElementById('datos_basicos_ciudadano').style.display = 'none'; 
         document.getElementById('contenedorDatosPersonales').style.display = 'none'; 
         document.getElementById('seccionTramiteCompleto').style.display = 'none';
+        document.getElementById('seccionFirma').style.display = 'none';
         
         document.getElementById('modo_operacion').value = 'actuacion_previa';
         
@@ -502,6 +501,22 @@ function buscarParaActualizar() {
             if(d.grupo_poblacional) document.getElementById('grupo_poblacional').value = d.grupo_poblacional;
             if(d.zona_residencia) document.getElementById('zona_residencia').value = d.zona_residencia;
             if(d.barrio_vereda) document.getElementById('barrio_vereda').value = d.barrio_vereda;
+
+            // Verificar si ya tiene firma digital
+            let btnFirma = document.getElementById('btnAbrirHabeas');
+            if ((d.firma_digital && d.firma_digital !== '') || d.habeas_data_aceptado == 1) {
+                btnFirma.classList.remove('btn-warning');
+                btnFirma.classList.add('btn-success');
+                btnFirma.innerHTML = '<i class="fas fa-check-double"></i> Firma Registrada (Click para actualizar si desea)';
+                
+                // Evitar que se sobrescriba a 0 si ya lo había aceptado
+                document.getElementById('habeas_data_check_input').value = '1';
+            } else {
+                btnFirma.classList.remove('btn-success');
+                btnFirma.classList.add('btn-warning');
+                btnFirma.innerHTML = '<i class="fas fa-signature"></i> PENDIENTE: Firmar y Autorizar Datos';
+                document.getElementById('habeas_data_check_input').value = '0';
+            }
 
             Swal.fire({
                 icon: 'success',
@@ -640,7 +655,16 @@ function actualizarAreasAtencion() {
     if (tipo === 'Asesorias') {
         opciones = [
             'PPL (PERSONA PRIVADA DE LA LIBERTAD)',
-            'AMPARO DE POBREZA'
+            'AMPARO DE POBREZA',
+            'CIVIL Y/O FAMILIA',
+            'CONSUMIDOR',
+            'DERECHOS FUNDAMENTALES',
+            'FINANCIERO O SEGUROS',
+            'LABORAL',
+            'PENAL',
+            'PENSIONES',
+            'SALUD',
+            'VICTIMAS'
         ];
     } else if (tipo === 'Quejas Disciplinarias') {
         opciones = [
@@ -734,6 +758,21 @@ document.getElementById('btnBuscar').addEventListener('click', function() {
     if(el) {
         el.addEventListener('input', function() {
             this.value = this.value.toUpperCase();
+            
+            // Logica especial para OTROS
+            if (id === 'barrio_vereda') {
+                if (this.value === 'OTROS (URBANO)' || this.value === 'OTROS (RURAL)') {
+                    this.value = ''; // Limpiamos para que escriba libremente
+                    this.focus();
+                    Swal.fire({
+                        title: 'Especifique el lugar',
+                        text: 'Ha seleccionado "OTROS". Por favor, escriba directamente en el campo el nombre del nuevo barrio o vereda.',
+                        icon: 'info',
+                        timer: 4000,
+                        showConfirmButton: false
+                    });
+                }
+            }
         });
     }
 });

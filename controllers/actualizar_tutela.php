@@ -14,8 +14,42 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // El frontend envía 'tipo_tramite_actual' = 'NORMAL' o 'ACTUACION'
     $tipo_tramite = isset($_POST['tipo_tramite_actual']) ? $_POST['tipo_tramite_actual'] : 'NORMAL';
     $observaciones = isset($_POST['observaciones']) ? trim($_POST['observaciones']) : '';
+    $nueva_observacion = isset($_POST['nueva_observacion']) ? trim($_POST['nueva_observacion']) : '';
 
-    if ($tipo_tramite === 'ACTUACION') {
+    if (!empty($nueva_observacion)) {
+        date_default_timezone_set('America/Bogota');
+        $fecha_hora = date('Y-m-d h:i A');
+        $autor = isset($_SESSION['usuario_nombre']) ? $_SESSION['usuario_nombre'] : 'Usuario';
+        
+        $registro_nuevo = "[$fecha_hora] $autor: " . $nueva_observacion;
+        
+        if (!empty($observaciones)) {
+            $observaciones = $observaciones . "\n\n" . $registro_nuevo;
+        } else {
+            $observaciones = $registro_nuevo;
+        }
+    }
+
+    if ($tipo_tramite === 'ASESORIA') {
+        // --- ACTUALIZACIÓN DE ASESORÍA DENTRO DEL PANEL DE SEGUIMIENTO ---
+        $estado = isset($_POST['estado_asesoria']) ? $_POST['estado_asesoria'] : 'Pendiente';
+
+        $sql = "UPDATE tutelas SET 
+                estado = ?,
+                observaciones = ?
+                WHERE id = ?";
+        
+        if ($stmt = $conn->prepare($sql)) {
+            $stmt->bind_param("ssi", $estado, $observaciones, $id);
+            if ($stmt->execute()) {
+                 header("Location: ../seguimiento_tutelas.php?msg=Asesoría actualizada correctamente");
+            } else {
+                 echo "Error al actualizar asesoría: " . $stmt->error;
+            }
+            $stmt->close();
+        }
+
+    } else if ($tipo_tramite === 'ACTUACION') {
         // --- ACTUALIZACIÓN DE SUB-CASO (Trámite Previo) ---
         
         $fecha_rad = !empty($_POST['fecha_radicacion_actuacion']) ? $_POST['fecha_radicacion_actuacion'] : NULL;
