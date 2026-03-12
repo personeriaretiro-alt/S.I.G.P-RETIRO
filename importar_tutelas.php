@@ -79,9 +79,12 @@ if (isset($_POST["import"])) {
                 $ciudadano_id = $check->fetch_assoc()['id'];
                 // Podríamos actualizar datos si están vacíos, pero priorizamos velocidad
             } else {
+                // Parsear edad como número
+                $edad_int = (int)$rango_edad;
+
                 // Crear
-                $stmt = $conn->prepare("INSERT INTO ciudadanos (nombres, apellidos, tipo_documento, numero_documento, telefono, email, genero, grupo_poblacional, rango_edad, zona_residencia, barrio_vereda) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
-                $stmt->bind_param("sssssssssss", $nombres, $apellidos, $tipo_doc, $num_doc, $telefono, $email, $genero, $grupo_pob, $rango_edad, $zona, $barrio);
+                $stmt = $conn->prepare("INSERT INTO ciudadanos (nombres, apellidos, tipo_documento, numero_documento, telefono, email, genero, grupo_poblacional, edad, zona_residencia, barrio_vereda) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
+                $stmt->bind_param("ssssssssiss", $nombres, $apellidos, $tipo_doc, $num_doc, $telefono, $email, $genero, $grupo_pob, $edad_int, $zona, $barrio);
                 if($stmt->execute()){
                     $ciudadano_id = $conn->insert_id;
                     $creados++;

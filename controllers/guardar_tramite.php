@@ -412,6 +412,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
              }
         }
         // ---------------------------------------
+
+        // --- LOGICA ESPECIFICA PARA TRAMITES DE SALUD ---
+        // Si el trámite es de Salud, creamos el registro en la tabla respectiva
+        if ($nombre_tramite == 'TRAMITES DE SALUD' || $nombre_tramite == 'Tramites de salud') {
+             $estado_salud = 'Pendiente';
+             $fecha_atencion_salud = date('Y-m-d');
+             // $obs contiene la observación inicial
+             $stmt_salud = $conn->prepare("INSERT INTO tramites_salud (ciudadano_id, fecha_atencion, servicio_solicitado, eps, gestionado_a_traves_de, estado, realizado_por, observaciones, r_super_salud) VALUES (?, ?, '', '', '', ?, '', ?, '')");
+             if ($stmt_salud) {
+                 $stmt_salud->bind_param("isss", $cid_id, $fecha_atencion_salud, $estado_salud, $obs);
+                 $stmt_salud->execute();
+                 $stmt_salud->close();
+             }
+        }
+        // ---------------------------------------
         
         // Agregar traza
         

@@ -135,11 +135,11 @@
             
             <?php 
             $rol = $_SESSION['rol_id'] ?? 0; 
-            // Roles: 1=Admin, 2=Personero, 3=Funcionario, 11=Abg. Tutelas, 12=Abg. Asesorias
+            // Roles: 1=Admin, 2=Personero, 3=Funcionario, 11=Abg. Tutelas, 12=Abg. Asesorias, 13=Aux. Salud
             ?>
 
             <!-- SECCIÓN GESTIÓN -->
-            <?php if(in_array($rol, [1, 2, 3, 11, 12])): ?>
+            <?php if(in_array($rol, [1, 2, 3, 11, 12, 13])): ?>
             <div class="text-white-50 px-3 mt-3 mb-1 small text-uppercase fw-bold">Gestión</div>
             <a href="nuevo_tramite.php" class="list-group-item list-group-item-action"><i class="fas fa-plus-circle me-2"></i> Nuevo Trámite</a>
             <?php endif; ?>
@@ -158,15 +158,15 @@
             <?php endif; ?>
 
             <!-- Solo Admin (1), Personero (2), Funcionario General (3) y Abg. Asesorias (12) -->
-            <?php if(in_array($rol, [1, 2, 3, 12])): ?>
-            <a href="panel_asesorias.php" class="list-group-item list-group-item-action"><i class="fas fa-chalkboard-teacher me-2"></i> Asesorías</a>
+            
+
+            <!-- Trámites de Salud (Solo Admin, Personero, Funcionario General, Auxiliar de Salud) -->
+            <?php if(in_array($rol, [1, 2, 3, 13])): ?>
+            <a href="Tramites_salud.php" class="list-group-item list-group-item-action"><i class="fas fa-heartbeat me-2"></i> Trámites de Salud</a>
             <?php endif; ?>
 
             <!-- Módulos Normalizados (Solo Admin por ahora) -->
-            <?php if($rol == 1): ?>
-            <a href="#" class="list-group-item list-group-item-action"><i class="fas fa-file-contract me-2"></i> Derechos de Petición</a>
-            <a href="#" class="list-group-item list-group-item-action"><i class="fas fa-user-shield me-2"></i> Quejas Disciplinarias</a>
-            <?php endif; ?>
+           
             
             <!-- SECCIÓN ADMINISTRACIÓN (Solo Admin) -->
             <?php if(in_array($rol, [1, 2])): ?>

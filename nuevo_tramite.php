@@ -233,6 +233,7 @@ $res_tipos = $conn->query($sql_tipos);
                                 <option value="Derecho de Peticion">DERECHO DE PETICION</option>
                                 <option value="Quejas Disciplinarias">QUEJAS DISCIPLINARIAS</option>
                                 <option value="TOMA DE DECLARACIONES RUV">TOMA DE DECLARACIONES RUV</option>
+                                <option value="TRAMITES DE SALUD">TRÁMITES DE SALUD</option>
                                 <option value="Tutelas">TUTELAS</option>
                             </select>
                         </div>
@@ -680,6 +681,8 @@ function actualizarAreasAtencion() {
         ];
      } else if (tipo === 'TOMA DE DECLARACIONES RUV') { // Corregido para coincidir con el value
         opciones = ['TOMA DE DECLARACION', 'SOLICITUD DE AYUDA HUMANITARIA']; 
+    } else if (tipo === 'TRAMITES DE SALUD') {
+        opciones = ['TRÁMITES DE SALUD'];
     } else {
         // Opciones por defecto para otros trámites
         opciones = [
